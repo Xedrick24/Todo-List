@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Todo List</title>
+		<link rel="stylesheet" href="bootstrap.min.css"/>
+	</head>
+	<body class="container my-5">
+		<h1 class="text-center">My Todo List</h1>
+		<div class="row mb-3">
+			<div class="col">
+				<input id="todo" class="form-control" placeholder="New Todo"/>
+			</div>
+			<div class="col-sm-2">
+				<button id="new_todo" class="btn btn-primary">Add Todo</button>
+			</div>
+		</div>
+		<table id="todos" class="table"></table>
+		<div id="edit_todo" class="container-fluid pt-3" style="display: none; position: fixed; top: 0; left: 0; z-index: 1;"><div class="container my-5">
+			<div class="w-25 p-4 position-absolute start-50 translate-middle-x bg-light shadow-sm rounded">
+				<h3 class="text-center mb-4">Edit Todo</h3>
+				<input id="edit_value" class="form-control mb-3" placeholder="Edit Todo"/>
+				<div class="row">
+					<button id="apply_edit" class="btn btn-success w-50">Save Changes</button>
+					<button id="cancel_edit" class="btn btn-danger w-50">Cancel</button>
+				</div>
+			</div>
+		</div></div>
+		<script>
+			var data = {
+				todos: []
+			};
+			function renderTable(){
+				var todos = document.getElementById("todos");
+				todos.innerHTML = "";
+				var i = 0;
+				data.todos.forEach((todo_main) => {
+					todos.appendChild(renderRow(i, todo_main));
+					i++;
+				});
+				console.log(data);
+			}
+			function renderRow(table_index, todo_main){
+				var row = document.createElement("tr");
+				row.setAttribute("style", "border: 1px solid #CCCCCC;");
+				row.innerHTML = "<td"+(todo_main.done ? " style=\"text-decoration: line-through;\"" : "")+">"+todo_main.todo+"</td>"+(todo_main.done ? "<td class=\"col-sm-1\"><a href=\"#\" style=\"color: red;\" onclick=\"deleteTodo("+table_index+", "+todo_main.id+")\">Delete</a></td>" : "<td class=\"col-sm-1\"></td>")+"<td class=\"col-sm-2\"><a href=\"#\" style=\"color: blue;\" onclick=\"todoSetDone("+table_index+", "+todo_main.id+", "+(!todo_main.done)+")\">"+(todo_main.done ? "Unmark" : "Mark")+" Done</a></td><td class=\"col-sm-1\"><a href=\"#\" style=\"color: green\" onclick=\"editTodo("+table_index+", "+todo_main.id+")\">Edit</a></td>";
+				return row;
+			}
+			function verifyID(id){
+				var found = false;
+				for(var x = 0;x < data.todos.length;x++){
+					if(data.todos[x].id == id){
+						found = true;
+						break;
+					}
+				}
+				return !found;
+			}
+			function deleteTodo(table_index, data_id){
+				var key = 0;
+				var found = false;
+				for(key = 0;key < data.todos.length;key++){
+					if(data.todos[key].id == data_id){
+						found = true;
+						break;
+					}
+				}
+				if(found){
+					if(confirm("Do you want to delete '"+data.todos[key].todo+"'?")){
+						data.todos.splice(key, 1);
+						document.getElementById("todos").removeChild(document.getElementById("todos").childNodes[table_index]);
+						console.log(data);
+					}
+				}
+				else{
+					alert("Todo not found");
+				}
+			}
+			function todoSetDone(table_index, data_id, state){
+				var key = 0;
+				var found = false;
+				for(key = 0;key < data.todos.length;key++){
+					if(data.todos[key].id == data_id){
+						found = true;
+						break;
+					}
+				}
+				if(found){
+					data.todos[key].done = !data.todos[key].done;
+					document.getElementById("todos").replaceChild(renderRow(table_index, data.todos[key]), document.getElementById("todos").childNodes[table_index]);
+					console.log(data);
+				}
+				else{
+					alert("Todo not found");
+				}
+			}
+			function editTodo(table_index, data_id){
+				var key = 0;
+				var found = false;
+				for(key = 0;key < data.todos.length;key++){
+					if(data.todos[key].id == data_id){
+						found = true;
+						break;
+					}
+				}
+				if(found){
+					document.getElementById("edit_todo").setAttribute("style", "position: fixed; top: 0; left: 0; z-index: 1;");
+					document.getElementById("edit_value").value = data.todos[key].todo;
+					document.getElementById("apply_edit").setAttribute("onclick", "editTodoFinal("+table_index+", "+key+")");
+				}
+				else{
+					alert("Todo not found");
+				}
+			}
+			function editTodoFinal(table_index, data_index){
+				if(confirm("Do you want to apply changes to '"+data.todos[data_index].todo+"'?")){
+					data.todos[data_index].todo = document.getElementById("edit_value").value;
+					document.getElementById("todos").replaceChild(renderRow(table_index, data.todos[data_index]), document.getElementById("todos").childNodes[table_index]);
+					console.log(data);
+					document.getElementById("edit_todo").setAttribute("style", "display: none; position: fixed; top: 0; left: 0; z-index: 1;");
+				}
+			}
+			renderTable();
+			document.getElementById("new_todo").addEventListener("click", () => {
+				var new_todo = document.getElementById("todo").value;
+				if(new_todo == ""){
+					alert("List todo on the New Todo field.");
+				}
+				else{
+					var idRaw = data.todos.length;
+					while(!verifyID(idRaw)){
+						++idRaw;
+					}
+					data.todos[idRaw] = {
+						"id": idRaw,
+						"todo": new_todo,
+						"done": false
+					}
+					document.getElementById("todo").value = "";
+					renderTable();
+				}
+			});
+			document.getElementById("cancel_edit").addEventListener("click", () => {
+				document.getElementById("edit_todo").setAttribute("style", "display: none; position: fixed; top: 0; left: 0; z-index: 1;");
+			});
+		</script>
+	</body>
+</html>
